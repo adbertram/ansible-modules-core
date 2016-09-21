@@ -83,8 +83,8 @@ Catch [System.ComponentModel.Win32Exception] {
 # TODO: resolve potential deadlock here if stderr fills buffer (~4k) before stdout is closed,
 # perhaps some async stream pumping with Process Output/ErrorDataReceived events...
 
-$result.stdout = $proc.StandardOutput.ReadToEnd()
-$result.stderr = $proc.StandardError.ReadToEnd()
+$result.stdout = $proc.StandardOutput.ReadToEnd().Trim()
+$result.stderr = $proc.StandardError.ReadToEnd().Trim()
 
 # TODO: decode CLIXML stderr output (and other streams?)
 
