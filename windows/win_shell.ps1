@@ -30,14 +30,14 @@ $executable = Get-AnsibleParam $parsed_args "executable"
 $creates = Get-AnsibleParam $parsed_args "creates"
 $removes = Get-AnsibleParam $parsed_args "removes"
 
-$result = @{changed=$true; warnings=@(); cmd=$raw_command_line}
+$result = @{changed=$false; warnings=@(); cmd=$raw_command_line}
 
 If($creates -and $(Test-Path $creates)) {
-    Exit-Json @{cmd=$raw_command_line; msg="skipped, since $creates exists"; changed=$false; skipped=$true; rc=0}
+    Exit-Json @{cmd=$raw_command_line; msg="skipped, since $creates exists"; skipped=$true; rc=0}
 }
 
 If($removes -and -not $(Test-Path $removes)) {
-    Exit-Json @{cmd=$raw_command_line; msg="skipped, since $removes does not exist"; changed=$false; skipped=$true; rc=0}
+    Exit-Json @{cmd=$raw_command_line; msg="skipped, since $removes does not exist"; skipped=$true; rc=0}
 }
 
 $exec_args = $null
@@ -77,14 +77,14 @@ Catch [System.ComponentModel.Win32Exception] {
     # fail nicely for "normal" error conditions
     # FUTURE: this probably won't work on Nano Server
     $excep = $_
-    Exit-Json @{failed=$true;changed=$false;cmd=$raw_command_line;rc=$excep.Exception.NativeErrorCode;msg=$excep.Exception.Message}
+    Exit-Json @{failed=$true;cmd=$raw_command_line;rc=$excep.Exception.NativeErrorCode;msg=$excep.Exception.Message}
 }
 
 # TODO: resolve potential deadlock here if stderr fills buffer (~4k) before stdout is closed,
 # perhaps some async stream pumping with Process Output/ErrorDataReceived events...
 
-$result.stdout = $proc.StandardOutput.ReadToEnd()
-$result.stderr = $proc.StandardError.ReadToEnd()
+$result.stdout = $proc.StandardOutput.ReadToEnd().Trim()
+$result.stderr = $proc.StandardError.ReadToEnd().Trim()
 
 # TODO: decode CLIXML stderr output (and other streams?)
 
